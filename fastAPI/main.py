@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
 from model import PdfProcessor  
+from fastapi.responses import JSONResponse
+
 
 app = FastAPI()
 
@@ -52,13 +54,14 @@ async def list_pdfs():
 async def interact_pdf(request: PdfInteractionRequest):
     file_location = os.path.join(UPLOAD_DIR, request.filename)
     print(file_location)
+    print(request.question)
     
     if not os.path.exists(file_location):
         raise HTTPException(status_code=404, detail="File not found")
     
     result = pdf_processor.get_answer(file_location, request.question)
     
-    return {"filename": request.filename, "answer": result}
+    return JSONResponse(content= {"filename": request.filename, "answer": result})
 
 @app.get("/")
 async def read_root():

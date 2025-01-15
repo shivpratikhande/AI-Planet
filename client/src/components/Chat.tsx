@@ -16,11 +16,11 @@ import {
 
 export default function Chat() {
     const [message, setMessage] = useState("");
-    const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [responseMessage, setResponseMessage] = useState<string>("");
     const [selectedOption, setSelectedOption] = useState("");
     const [value, setValue] = useState<any[]>([]);
+    const [chatMessages, setChatMessages] = useState<{ question: string; answer: string }[]>([]); // Single state for both question and answer
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
@@ -54,10 +54,6 @@ export default function Chat() {
         }
     };
 
-    const handleChange = (event: any) => {
-        setSelectedOption(event.target.value);
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -65,13 +61,35 @@ export default function Chat() {
             setResponseMessage("Please select a file.");
             return;
         }
+
+        // Immediately add the user's question to the chat messages
+        setChatMessages((prev) => [
+            ...prev,
+            { question: message, answer: "" }, // Placeholder for answer
+        ]);
+
+        setUploading(true);
+        setMessage(""); // Clear the input field after submitting
+
         try {
-            await axios.post("http://127.0.0.1:8000/interact-pdf/", {
-                fileName: selectedOption,
+            const response = await axios.post("http://127.0.0.1:8000/interact-pdf/", {
+                filename: selectedOption,
                 question: message,
+            });
+
+            // Now update the chat with the bot's answer
+            setChatMessages((prev) => {
+                const updatedMessages = [...prev];
+                updatedMessages[updatedMessages.length - 1] = {
+                    question: message,
+                    answer: response.data.answer, // Set the answer
+                };
+                return updatedMessages;
             });
         } catch (error) {
             console.error("Error asking question:", error);
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -79,17 +97,13 @@ export default function Chat() {
         const fetchData = async () => {
             const response = await axios.get("http://localhost:8000/list-pdfs/");
             setValue(response.data.files);
-            console.log(response.data.files);
-            console.log(value);
         };
         fetchData();
     }, []);
 
-    console.log(selectedOption)
-
     return (
         <div className="flex min-h-screen flex-col bg-white">
-            <header className="flex items-center justify-between border-b px-4 py-2">
+            <header className="flex items-center justify-between border-b px-4 py-2 px-16">
                 <div className="flex items-center gap-2">
                     <Image
                         src="/image.png"
@@ -109,8 +123,7 @@ export default function Chat() {
                         <SelectContent>
                             {value.map((item: any) => (
                                 <SelectItem key={item} value={item}>{item}</SelectItem>
-                            )
-                            )}
+                            ))}
                         </SelectContent>
                     </Select>
 
@@ -136,19 +149,18 @@ export default function Chat() {
                             onChange={handleFileChange}
                         />
                         Upload PDF
-
                     </Button>
                 </div>
             </header>
 
             <div className="flex-1 overflow-auto p-4">
-                <div className="mx-auto max-w-3xl space-y-4">
-                    {/* Messages */}
+                <div className="mx-auto max-w-[1208px] font-inter space-y-4 h-96">
+
                     <div className="flex items-start gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-sm font-medium text-violet-500">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-sm font-medium text-violet-500 p-5">
                             S
                         </div>
-                        <div className="rounded-lg bg-gray-100 px-4 py-2">
+                        <div className="rounded-lg  px-4 py-2">
                             <p>Explain like I'm 5</p>
                         </div>
                     </div>
@@ -157,13 +169,36 @@ export default function Chat() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-full p-5 bg-emerald-500">
                             {/* Bot icon */}
                         </div>
-                        <div className="rounded-lg bg-gray-100 px-4 py-2">
+                        <div className="rounded-lg  px-4 py-2">
                             <p>
                                 Our own Large Language Model (LLM) is a type of AI that can learn from data. We have trained it on 7 billion
                                 parameters, making it better than other LLMs.
                             </p>
                         </div>
+
                     </div>
+
+                    {chatMessages.map((item, index) => (
+                        <div key={index} className=" flex flex-col gap-5">
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-sm font-medium text-violet-500 p-5">
+                                    S
+                                </div>
+                                <div className="rounded-lg  px-4 py-2">
+                                    <p>{item.question}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 p-5">
+                                    {/* Bot icon */}
+                                </div>
+                                <div className="rounded-lg px-4 py-2">
+                                    <p>{item.answer || "..."}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
