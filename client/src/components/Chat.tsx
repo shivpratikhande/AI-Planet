@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from 'lucide-react';
@@ -13,6 +13,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { TextAnimation } from "./textAnimation";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 export default function Chat() {
     const [message, setMessage] = useState("");
@@ -20,7 +22,17 @@ export default function Chat() {
     const [responseMessage, setResponseMessage] = useState<string>("");
     const [selectedOption, setSelectedOption] = useState("");
     const [value, setValue] = useState<any[]>([]);
-    const [chatMessages, setChatMessages] = useState<{ question: string; answer: string }[]>([]); // Single state for both question and answer
+    const [chatMessages, setChatMessages] = useState<{ question: string; answer: string }[]>([]);
+    // 
+    // r
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [chatMessages]);
+
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
@@ -62,14 +74,13 @@ export default function Chat() {
             return;
         }
 
-        // Immediately add the user's question to the chat messages
         setChatMessages((prev) => [
             ...prev,
-            { question: message, answer: "" }, // Placeholder for answer
+            { question: message, answer: "" },
         ]);
 
         setUploading(true);
-        setMessage(""); // Clear the input field after submitting
+        setMessage("");
 
         try {
             const response = await axios.post("http://127.0.0.1:8000/interact-pdf/", {
@@ -77,12 +88,11 @@ export default function Chat() {
                 question: message,
             });
 
-            // Now update the chat with the bot's answer
             setChatMessages((prev) => {
                 const updatedMessages = [...prev];
                 updatedMessages[updatedMessages.length - 1] = {
                     question: message,
-                    answer: response.data.answer, // Set the answer
+                    answer: response.data.answer,
                 };
                 return updatedMessages;
             });
@@ -103,13 +113,13 @@ export default function Chat() {
 
     return (
         <div className="flex min-h-screen flex-col bg-white">
-            <header className="flex items-center justify-between border-b px-4 py-2 px-16">
+            <header className="flex items-center justify-between border-b py-2 px-16">
                 <div className="flex items-center gap-2">
                     <Image
                         src="/image.png"
                         alt="logo"
-                        width={100}
-                        height={100}
+                        width={105}
+                        height={41}
                         className="h-auto w-auto"
                         quality={100}
                         priority={true}
@@ -150,57 +160,94 @@ export default function Chat() {
                         />
                         Upload PDF
                     </Button>
+                    <div className=" pl-2">
+                        <SignedOut>
+                            <div className=" bg-black text-white p-1 px-3 rounded-md hover:scale-105 transform duration-300">
+                                <SignInButton />
+
+                            </div>
+                        </SignedOut>
+                        <SignedIn>
+                            <UserButton />
+                        </SignedIn>
+                    </div>
+
                 </div>
             </header>
 
             <div className="flex-1 overflow-auto p-4">
-                <div className="mx-auto max-w-[1208px] font-inter space-y-4 h-96">
+                <div className="mx-auto max-w-[1208px] font-inter space-y-4 h-96 my-3 mb-16 flex flex-col gap-6 " ref={chatContainerRef}>
 
                     <div className="flex items-start gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-sm font-medium text-violet-500 p-5">
                             S
                         </div>
-                        <div className="rounded-lg  px-4 py-2">
+                        <div className="rounded-lg px-4 py-2">
                             <p>Explain like I'm 5</p>
                         </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full p-5 bg-emerald-500">
-                            {/* Bot icon */}
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center rounded-full" style={{ width: "42px", height: "42px" }}>
+                            <Image
+                                src="/image2.png"
+                                alt="logo"
+                                width={42}
+                                height={42}
+                                quality={100}
+                                priority={true}
+                                className="object-cover"
+                            />
                         </div>
-                        <div className="rounded-lg  px-4 py-2">
+
+                        <div className="rounded-lg px-4 py-2 flex-1 min-h-[48px]">
                             <p>
                                 Our own Large Language Model (LLM) is a type of AI that can learn from data. We have trained it on 7 billion
                                 parameters, making it better than other LLMs.
                             </p>
                         </div>
-
                     </div>
 
                     {chatMessages.map((item, index) => (
-                        <div key={index} className=" flex flex-col gap-5">
+                        <div key={index} className="flex flex-col gap-6">
+
                             <div className="flex items-start gap-3">
                                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-sm font-medium text-violet-500 p-5">
                                     S
                                 </div>
-                                <div className="rounded-lg  px-4 py-2">
+                                <div className="rounded-lg px-4 py-2">
                                     <p>{item.question}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-3">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 p-5">
-                                    {/* Bot icon */}
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center justify-center rounded-full" style={{ width: "42px", height: "42px" }}>
+                                    <Image
+                                        src="/image2.png"
+                                        alt="logo"
+                                        width={42}
+                                        height={42}
+                                        quality={100}
+                                        priority={true}
+                                        className="object-cover"
+                                    />
                                 </div>
-                                <div className="rounded-lg px-4 py-2">
-                                    <p>{item.answer || "..."}</p>
+
+                                <div className="rounded-lg px-4 py-2 flex-1 min-h-[48px]">
+                                    <h1>
+                                        {item.answer ? (
+                                            <TextAnimation words={item.answer} />
+                                        ) : (
+                                            <p className="animate-pulse">Loading...</p>
+                                        )}
+                                    </h1>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
+
 
             <div className="border-t p-4">
                 <div className="mx-auto max-w-3xl">
