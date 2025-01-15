@@ -8,7 +8,6 @@ def to_markdown(text):
   return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
 
 import google.generativeai as genai
-# from google.colab import userdata
 
 import os
 genai.configure(api_key="IzaSyD_AM1vtBozbFogrkUUoviWmljs78KBLkI")

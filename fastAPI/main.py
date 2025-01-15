@@ -1,9 +1,26 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
 from model import PdfProcessor  
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000",  
+    "https://yourfrontenddomain.com", 
+    "http://localhost:3001", 
+
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins, 
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"],  
+)
 
 google_api_key = "AIzaSyD_AM1vtBozbFogrkUUoviWmljs78KBLkI"
 pdf_processor = PdfProcessor(google_api_key)
@@ -11,9 +28,12 @@ pdf_processor = PdfProcessor(google_api_key)
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+class PdfInteractionRequest(BaseModel):
+    filename: str
+    question: str
+
 @app.post("/upload-pdf/")
 async def upload_pdf(file: UploadFile = File(...)):
-
     file_location = os.path.join(UPLOAD_DIR, file.filename)
     print(file_location)
     
@@ -28,18 +48,17 @@ async def list_pdfs():
     files = os.listdir(UPLOAD_DIR)
     return {"files": files}
 
-
 @app.post("/interact-pdf/")
-async def interact_pdf(filename: str, question: str = ""):
-    file_location = os.path.join(UPLOAD_DIR, filename)
+async def interact_pdf(request: PdfInteractionRequest):
+    file_location = os.path.join(UPLOAD_DIR, request.filename)
     print(file_location)
     
     if not os.path.exists(file_location):
-        return {"error": "File not found"}
+        raise HTTPException(status_code=404, detail="File not found")
     
-    result = pdf_processor.get_answer(file_location, question)
+    result = pdf_processor.get_answer(file_location, request.question)
     
-    return {"filename": filename, "answer": result}
+    return {"filename": request.filename, "answer": result}
 
 @app.get("/")
 async def read_root():
