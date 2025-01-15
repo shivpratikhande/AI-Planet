@@ -1,6 +1,7 @@
-fastapi
-uvicorn
-langchain
-pydantic
-pikepdf
-PyMuPDF
+pandas==2.2.3
+langchain==0.3.14
+langchain-google-genai==2.0.8
+google-api-python-client==2.159.0
+IPython==8.31.0
+langchain_community==0.2
+chromadb==0.2.0
