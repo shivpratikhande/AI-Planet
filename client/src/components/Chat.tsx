@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send } from 'lucide-react';
+import { CirclePlus, File, Send } from 'lucide-react';
 import Image from "next/image";
 import axios from "axios";
 import {
@@ -23,17 +23,17 @@ export default function Chat() {
     const [selectedOption, setSelectedOption] = useState("");
     const [value, setValue] = useState<any[]>([]);
     const [chatMessages, setChatMessages] = useState<{ question: string; answer: string }[]>([]);
-    // 
-    // r
+
     const chatContainerRef = useRef<HTMLDivElement>(null);
 
+    /* auto scroll down prob dont work ig */
     useEffect(() => {
         if (chatContainerRef.current) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
     }, [chatMessages]);
 
-
+    /* handling the file change */
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
 
@@ -66,6 +66,7 @@ export default function Chat() {
         }
     };
 
+    /* for submitting */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -102,7 +103,7 @@ export default function Chat() {
             setUploading(false);
         }
     };
-
+    /* handling the pdf list */
     useEffect(() => {
         const fetchData = async () => {
             const response = await axios.get("http://localhost:8000/list-pdfs/");
@@ -113,7 +114,7 @@ export default function Chat() {
 
     return (
         <div className="flex min-h-screen flex-col bg-white">
-            <header className="flex items-center justify-between border-b py-2 px-16">
+            <header className="flex items-center justify-between border-b py-2 px-4 sm:px-16">
                 <div className="flex items-center gap-2">
                     <Image
                         src="/image.png"
@@ -126,9 +127,17 @@ export default function Chat() {
                     />
                 </div>
                 <div className=" flex gap-2">
-                    <Select onValueChange={setSelectedOption}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Theme" />
+                    {/* file select dropdown */}
+                    <Select onValueChange={setSelectedOption}  >
+                        <SelectTrigger className="w-[150px]  flex items-center gap-2">
+
+                            <div className=" border border-emerald-300 border-spacing-6 p-1 rounded-md">
+                                <File className="text-emerald-500 w-5 h-5 " />
+
+                            </div>
+
+
+                            <SelectValue placeholder="planet.pdf" className=" texteme5" />
                         </SelectTrigger>
                         <SelectContent>
                             {value.map((item: any) => (
@@ -137,30 +146,27 @@ export default function Chat() {
                         </SelectContent>
                     </Select>
 
-                    <Button variant="outline" size="sm" className="gap-2">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                            <polyline points="14 2 14 8 20 8" />
-                        </svg>
-
+                    <Button className=" hidden sm:flex gap-2 font-semibold bg-white text-black shadow-none border-black p-2 px-7 border  justify-center items-center relative">
+                        <CirclePlus className="w-5 h-5" />
                         <input
                             type="file"
-                            className="bg-transparent opacity-0 w-3 cursor-pointer"
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                             onChange={handleFileChange}
                         />
                         Upload PDF
                     </Button>
-                    <div className=" pl-2">
+
+                    {/* responsive */}
+                    <Button className=" sm:hidden gap-2 font-semibold bg-white text-black shadow-none border-black p-3  border flex justify-center items-center relative">
+                        <CirclePlus className="w-5 h-5" />
+                        <input
+                            type="file"
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                            onChange={handleFileChange}
+                        />
+                    </Button>
+                    {/* auth */}
+                    {/*        <div className=" hidden sm:block  pl-2">
                         <SignedOut>
                             <div className=" bg-black text-white p-1 px-3 rounded-md hover:scale-105 transform duration-300">
                                 <SignInButton />
@@ -170,7 +176,7 @@ export default function Chat() {
                         <SignedIn>
                             <UserButton />
                         </SignedIn>
-                    </div>
+                    </div> */}
 
                 </div>
             </header>
@@ -208,6 +214,7 @@ export default function Chat() {
                         </div>
                     </div>
 
+                    {/* dynamic msg */}
                     {chatMessages.map((item, index) => (
                         <div key={index} className="flex flex-col gap-6">
 
@@ -233,6 +240,7 @@ export default function Chat() {
                                     />
                                 </div>
 
+                                {/* animated input */}
                                 <div className="rounded-lg px-4 py-2 flex-1 min-h-[48px]">
                                     <h1>
                                         {item.answer ? (
@@ -248,28 +256,28 @@ export default function Chat() {
                 </div>
             </div>
 
-
-            <div className="border-t p-4">
-                <div className="mx-auto max-w-3xl">
+            {/* handling msg input */}
+            <div className=" p-4">
+                <div className="mx-auto max-w-[1200px]">
                     <form onSubmit={handleSubmit} className="relative">
                         <Input
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             placeholder="Send a message..."
-                            className="pr-10"
+                            className="pr-10 p-6 shadow-lg"
                         />
                         <Button
                             type="submit"
                             size="icon"
-                            className="absolute right-1 top-1/2 -translate-y-1/2"
+                            className="absolute  right-7 top-1/2 -translate-y-1/2 "
                             variant="ghost"
                             disabled={uploading}
                         >
-                            <Send className="h-4 w-4" />
+                            <Send className="h-4 w-4 rotate-45 " />
                         </Button>
                     </form>
                     <div className="mt-4">
-                        {uploading && <p>Uploading file...</p>}
+                        {uploading}
                         {responseMessage && <p>{responseMessage}</p>}
                     </div>
                 </div>
