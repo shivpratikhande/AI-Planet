@@ -137,7 +137,7 @@ Copy
    - The backend will process the questions and return answers using the LangChain and Gemini Flash models.
 
 ### Demo:
-If you have a live demo, replace `ai-planet-kappa.vercel.app` with the actual link.
+If you have a live demo, replace (`ai-planet-kappa.vercel.app`) with the actual link.
 
 ---
 
