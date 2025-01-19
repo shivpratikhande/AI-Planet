@@ -137,12 +137,8 @@ Copy
    - The backend will process the questions and return answers using the LangChain and Gemini Flash models.
 
 ### Demo:
-If you have a live demo, replace `[link_to_demo]` with the actual link.
+If you have a live demo, replace `ai-planet-kappa.vercel.app` with the actual link.
 
 ---
 
-### Final Notes:
-- **Replace `yourusername` in the repository URL** with your actual GitHub username.
-- **Customize the demo link** with a real URL if you have a hosted demo available.
-- Make sure all dependencies 
 
